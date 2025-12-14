@@ -149,3 +149,66 @@ y_train_pred_90 = (y_scores >= threshold_for_90_precision)
 
 print("Precision:", precision_score(y_train_5, y_train_pred_90))
 print("Recall:", recall_score(y_train_5, y_train_pred_90))
+
+
+
+from sklearn.metrics import roc_curve
+
+## Stores array of false positive rates, array of true positive rates, and an array of score thresholds used to compute fpr and tpr.
+fpr, tpr, thresholds = roc_curve(y_train_5, y_scores) 
+
+idx_for_threshold_at_90 = (thresholds <= threshold_for_90_precision).argmax() # Index of ROC point that corresponds to 90% precision threshold
+tpr_90, fpr_90 = tpr[idx_for_threshold_at_90], fpr[idx_for_threshold_at_90] # Extracts tpr and fpr rate at threshold
+
+plt.figure(figsize=(6, 5))
+plt.plot(fpr, tpr, linewidth=2, label="ROC CURVE") # Plots ROC curve
+plt.plot([0, 1], [0, 1], 'k:', label="Random classifier's ROC curve") # Plots diagonal reference line representing a random classifier
+plt.plot([fpr_90], [tpr_90], "ko", label="Threshold for 90% precision") # Marks ROC location where precision is 90%
+
+plt.xlabel('False Positive Rate (Fall-Out)')
+plt.ylabel('True Positive Rate (Recall)')
+plt.grid()
+plt.axis([0, 1, 0, 1])
+plt.legend(loc="lower right", fontsize=13)
+save_fig("roc_curve_plot")
+
+# plt.show()
+
+from sklearn.metrics import roc_auc_score
+print(roc_auc_score(y_train_5, y_scores))
+
+
+
+from sklearn.ensemble import RandomForestClassifier
+
+forest_clf = RandomForestClassifier(random_state=42) # Create Random Forest classifier object
+y_probas_forest = cross_val_predict(forest_clf, X_train, y_train_5, method="predict_proba") # Use cross-val to generate predictions for every training sample
+print(y_probas_forest[:2]) # Print predicted probability for first two training samples
+
+
+y_scores_forest = y_probas_forest[:, 1] # Extract the probabilities of positive class
+precisions_forest, recalls_forest, thresholds_forest = precision_recall_curve(y_train_5, y_scores_forest) # Compute precision recall curve returning precision values at each threshold, recall values at each threshold, and corresponding thresholds used
+
+
+plt.figure(figsize=(6, 5))
+
+plt.plot(recalls_forest, precisions_forest, "b-", linewidth=2, label="Random Forest")
+plt.plot(recalls, precisions, "--", linewidth=2, label="SGD")
+
+plt.xlabel("Recall")
+plt.ylabel("Precision")
+plt.axis([0, 1, 0, 1])
+plt.grid()
+plt.legend(loc="lower left")
+save_fig("pr_curve_comparison_plot")
+
+plt.show()
+
+
+y_train_pred_forest = y_probas_forest[:, 1] >= 0.5 # Positive probas greather than or equal to 50% predicted True
+print(f1_score(y_train_5, y_train_pred_forest))
+
+print(roc_auc_score(y_train_5, y_scores_forest))
+
+print(precision_score(y_train_5, y_train_pred_forest))
+print(recall_score(y_train_5, y_train_pred_forest))
