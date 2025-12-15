@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 from sklearn.datasets import fetch_openml
 from s01_config import save_fig
 
@@ -25,10 +26,10 @@ X_train, X_test, y_train, y_test = create_mnist_test_train()
 ## Exploration of input features (how they're presented)
 # import matplotlib.pyplot as plt
 
-# def plot_digit(image_data):
-#     image = image_data.reshape(28, 28)
-#     plt.imshow(image, cmap="binary")
-#     plt.axis("off")
+def plot_digit(image_data):
+    image = image_data.reshape(28, 28)
+    plt.imshow(image, cmap="binary")
+    plt.axis("off")
     
 # some_digit = X_train[0]
 # plot_digit(some_digit)
